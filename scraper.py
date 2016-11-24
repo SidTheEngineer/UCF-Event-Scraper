@@ -1,11 +1,13 @@
 from bs4 import BeautifulSoup
 import requests
+from parse import get_event_properties
 
 class Page(object):
     def __init__(self, url):
         self.url = url
         self.html = self.get_page_html()
         self.days = self.create_day_list()
+        self.create_event_list()
     
     # Get the 'soup' object of the page via BS4.
     def get_page_html(self):
@@ -23,6 +25,9 @@ class Page(object):
 
         return day_list
 
+    def create_event_list(self):
+        get_event_properties(self.html)
+
     def print_titles(self, html):
         pass
         
@@ -38,18 +43,17 @@ class Event(object):
         self.location = location
         self.description = description
 
-# Main function.
 if __name__ == "__main__":
     
     events_url = "http://events.ucf.edu/this-week/"
     events_page = Page(events_url)
 
-    for i in range(7):
-        print(events_page.days[i].name)
+    #for i in range(7):
+    #    print(events_page.days[i].name)
 
     #print(events_page.html.prettify())
 
     #for event in html.findAll("li", class_="event"):
         
-        # Get the title 
-        #print(event.a.contents[0].string)
+    #     Get the title 
+    #    print(event.a.contents[0].string)

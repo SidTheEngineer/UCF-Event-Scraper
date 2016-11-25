@@ -4,6 +4,7 @@ from parse import get_event_properties
 
 class Page(object):
     def __init__(self, url):
+        print("Initializing Page ...")
         self.url = url
         self.html = self.get_page_html()
         self.days = self.create_day_list()
@@ -11,6 +12,7 @@ class Page(object):
     
     # Get the 'soup' object of the page via BS4.
     def get_page_html(self):
+        print("Fetching page HTML ...")
         response = requests.get(self.url)
         html = BeautifulSoup(response.content, 'html.parser')
         return html

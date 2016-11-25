@@ -20,6 +20,9 @@ def get_event_lists(html):
     # Start after getting events from the 1st page.
     for index in range(0, len(links)):
         page = get_page_html(url + str(index))
+
+        # Do this by span day-heading instead to avoid duplicate days.
+        # Each list will be the next sibling of a span day-heading.
         day_event_lists = page.findAll("ul", class_="event-list")
 
         for event_list in day_event_lists:

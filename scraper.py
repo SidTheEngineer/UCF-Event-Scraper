@@ -1,61 +1,49 @@
 from bs4 import BeautifulSoup
+from models import Day, Event
+import re
 import requests
-from parse import get_event_properties
 
-class Page(object):
-    def __init__(self, url):
-        print("Initializing Page ...")
-        self.url = url
-        self.html = self.get_page_html()
-        self.days = self.create_day_list()
-        self.create_event_list()
+def get_page_html(url):
+    print("Fetching page HTML ...")
+    response = requests.get(url)
+    html = BeautifulSoup(response.content, 'html.parser')
+    return html
+
+def get_event_lists(html):
+    url = "http://events.ucf.edu/this-week/?page="
+    day_list = []
+
+    # Get how many pages there are, not including the "next arrow"
+    # via pagination at the bottom of the events page.
+    links = html.findAll("a", href=re.compile('page'))[:-1]
+
+    # Start after getting events from the 1st page.
+    for index in range(0, len(links)):
+        page = get_page_html(url + str(index))
+        day_event_lists = page.findAll("ul", class_="event-list")
+
+        for event_list in day_event_lists:
+            day_list.append(event_list)
+
+    for i, dl in enumerate(day_list):
+        print(i)
+
     
-    # Get the 'soup' object of the page via BS4.
-    def get_page_html(self):
-        print("Fetching page HTML ...")
-        response = requests.get(self.url)
-        html = BeautifulSoup(response.content, 'html.parser')
-        return html
+    
+# Initialize an array that holds Day objects
+def create_day_list(self):
+    names = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
+    day_list = []
 
-    def create_day_list(self):
-        names = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
-        day_list = []
+    for i in range(7):
+        day = Day(names[i], [])
+        day_list.append(day)
 
-        for i in range(7):
-            day = Day(names[i], [])
-            day_list.append(day)
-
-        return day_list
-
-    def create_event_list(self):
-        get_event_properties(self.html)
-
-    def print_titles(self, html):
-        pass
-        
-class Day(object):
-    def __init__(self, name, events):
-        self.name = name
-        self.events = events
-
-class Event(object):
-    def __init__(self, title, time, location, description):
-        self.title = title
-        self.time = time
-        self.location = location
-        self.description = description
+    return day_list
 
 if __name__ == "__main__":
     
     events_url = "http://events.ucf.edu/this-week/"
-    events_page = Page(events_url)
+    html = get_page_html(events_url)
 
-    #for i in range(7):
-    #    print(events_page.days[i].name)
-
-    #print(events_page.html.prettify())
-
-    #for event in html.findAll("li", class_="event"):
-        
-    #     Get the title 
-    #    print(event.a.contents[0].string)
+    get_event_lists(html)

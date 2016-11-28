@@ -34,31 +34,27 @@ def get_events(html):
 
 def format_datetime(unformated_datetime):
     day_names = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
-    month_names = [
-        'January',
-        'February',
-        'March',
-        'April',
-        'May',
-        'June',
-        'July',
-        'August',
-        'September',
-        'October',
-        'November',
-        'December'
-    ]
 
+    month_names = ['January','February','March','April','May','June','July',
+    'August','September','October','November','December']
+
+    # Clean up formatting.
     formatted_datetime = unformated_datetime.replace('-', ' ').replace('T', ' ').split(' ')[:-1]
 
     year = formatted_datetime[0]
     month = month_names[int(formatted_datetime[1]) - 1]
     day = formatted_datetime[2]
-    time = formatted_datetime[3]
+    time = formatted_datetime[3].replace(':', '').replace('.999999', '')[:-2]
 
     date_string = day + month + year + ' ' + time
-    print(datetime.strptime(date_string, '%d%B%Y %H:%M:%S'))
-    print(datetime.strptime(date_string, '%d%B%Y %H:%M:%S').weekday())
+
+    # Convert to datetime object.
+    date_obj = datetime.strptime(date_string, '%d%B%Y %H%M')
+
+    # Use datetime obj to get the weekday according to date.
+    weekday = day_names[date_obj.weekday()]
+
+    return [weekday, month, day, year, time]
 
 if __name__ == "__main__":
 
@@ -70,9 +66,5 @@ if __name__ == "__main__":
         start_time = event.find('time', class_='dtstart')['datetime']
         end_time = event.find('time', class_='dtend')['datetime']
 
-        # Convert from ISO style format to an easier to deal with format.
-        # Done explicitly because dateutil parser threw uknown type error.
-        #start_time = start_time.replace('-', ' ').replace('T', ' ').split(' ')[:-1]
-        #end_time = end_time.replace('-', ' ').replace('T', ' ').split(' ')[:-1]
-
-        format_datetime(start_time)
+        event_date_period = [format_datetime(start_time), format_datetime(end_time)]
+        print(event_date_period)

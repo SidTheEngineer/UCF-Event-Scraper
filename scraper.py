@@ -1,7 +1,9 @@
 from bs4 import BeautifulSoup
 from models import Day, Event
+from datetime import datetime
 import re
 import requests
+import dateutil.parser
 
 def get_page_html(url):
     print("Fetching page HTML from: " + url)
@@ -27,10 +29,14 @@ def get_events(html):
     # For each event list, get the events.
     for event_list in event_lists:
         events += event_list.findAll("li", class_="event")
-    
+
     return events
 
-        
+def get_date(event):
+    pass
+
+def get_time(event):
+    pass
 
 # Initialize an array that holds Day objects
 def create_day_list(self):
@@ -44,9 +50,18 @@ def create_day_list(self):
     return day_list
 
 if __name__ == "__main__":
-    
+
     events_url = "http://events.ucf.edu/this-week/"
     html = get_page_html(events_url)
 
     events = get_events(html)
-    print(events)
+    for event in events:
+        start_time = event.find('time', class_='dtstart')['datetime']
+        end_time = event.find('time', class_='dtend')['datetime']
+
+        # Convert from ISO style format to an easier to deal with format.
+        # Done explicitly because dateutil parser threw uknown type error.
+        start_time = start_time.replace('-', ' ').replace('T', ' ').split(' ')[:-1]
+        end_time = end_time.replace('-', ' ').replace('T', ' ').split(' ')[:-1]
+        
+        print('Start time: ' + str(start_time) + ' End time: ' + str(end_time))

@@ -32,22 +32,33 @@ def get_events(html):
 
     return events
 
-def get_date(event):
-    pass
-
-def get_time(event):
-    pass
-
-# Initialize an array that holds Day objects
-def create_day_list(self):
+def format_datetime(unformated_datetime):
     day_names = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
-    day_list = []
+    month_names = [
+        'January',
+        'February',
+        'March',
+        'April',
+        'May',
+        'June',
+        'July',
+        'August',
+        'September',
+        'October',
+        'November',
+        'December'
+    ]
 
-    for i in range(7):
-        day = Day(names[i], [])
-        day_list.append(day)
+    formatted_datetime = unformated_datetime.replace('-', ' ').replace('T', ' ').split(' ')[:-1]
 
-    return day_list
+    year = formatted_datetime[0]
+    month = month_names[int(formatted_datetime[1]) - 1]
+    day = formatted_datetime[2]
+    time = formatted_datetime[3]
+
+    date_string = day + month + year + ' ' + time
+    print(datetime.strptime(date_string, '%d%B%Y %H:%M:%S'))
+    print(datetime.strptime(date_string, '%d%B%Y %H:%M:%S').weekday())
 
 if __name__ == "__main__":
 
@@ -61,7 +72,7 @@ if __name__ == "__main__":
 
         # Convert from ISO style format to an easier to deal with format.
         # Done explicitly because dateutil parser threw uknown type error.
-        start_time = start_time.replace('-', ' ').replace('T', ' ').split(' ')[:-1]
-        end_time = end_time.replace('-', ' ').replace('T', ' ').split(' ')[:-1]
-        
-        print('Start time: ' + str(start_time) + ' End time: ' + str(end_time))
+        #start_time = start_time.replace('-', ' ').replace('T', ' ').split(' ')[:-1]
+        #end_time = end_time.replace('-', ' ').replace('T', ' ').split(' ')[:-1]
+
+        format_datetime(start_time)

@@ -5,9 +5,9 @@ import requests
 import dateutil.parser
 from Event import Event
 
-def get_page_html(url):
+def fetch_page_html(url):
     print("Fetching page HTML from: " + url)
-    response = requests.get(url)
+    response = requests.get(url, timeout=8)
     html = BeautifulSoup(response.content, 'html.parser')
     return html
 
@@ -22,7 +22,10 @@ def get_events(html):
 
     # For each individual page of events per week ...
     for index in range(0, len(links)):
-        page = get_page_html(url + str(index+1))
+        page = fetch_page_html(url + str(index+1))
+
+        print('Fetching events from week page ' + str(index+1) + ' ...')
+
         event_week = page.find(id="calendar-events-week")
         event_lists += event_week.findAll("ul", class_="event-list")
 
@@ -60,6 +63,8 @@ def format_datetime(unformated_datetime):
 
 def init_event_objects(events):
 
+    print('Creating event objects ...')
+
     event_objects = []
 
     for event in events:
@@ -88,9 +93,7 @@ def init_event_objects(events):
 if __name__ == "__main__":
 
     events_url = "http://events.ucf.edu/this-week/"
-    html = get_page_html(events_url)
+    html = fetch_page_html(events_url)
 
     events = get_events(html)
     event_objects = init_event_objects(events)
-
-    print(event_objects)

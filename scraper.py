@@ -1,9 +1,9 @@
 from bs4 import BeautifulSoup
-from models import Day, Event
 from datetime import datetime
 import re
 import requests
 import dateutil.parser
+from Event import Event
 
 def get_page_html(url):
     print("Fetching page HTML from: " + url)
@@ -33,13 +33,15 @@ def get_events(html):
     return events
 
 def format_datetime(unformated_datetime):
-    day_names = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
+    day_names = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday",
+    "Saturday"]
 
     month_names = ['January','February','March','April','May','June','July',
     'August','September','October','November','December']
 
     # Clean up formatting.
-    formatted_datetime = unformated_datetime.replace('-', ' ').replace('T', ' ').split(' ')[:-1]
+    formatted_datetime = unformated_datetime.replace('-', ' ').replace('T', ' ')
+    formatted_datetime = formatted_datetime.split(' ')[:-1]
 
     year = formatted_datetime[0]
     month = month_names[int(formatted_datetime[1]) - 1]
@@ -56,15 +58,39 @@ def format_datetime(unformated_datetime):
 
     return [weekday, month, day, year, time]
 
+def init_event_objects(events):
+
+    event_objects = []
+
+    for event in events:
+
+        title = event.h3.a.text
+        start_time = event.find('time', class_='dtstart')['datetime']
+        end_time = event.find('time', class_='dtend')['datetime']
+        location = event.find('span', class_='location').text
+        description = event.p.text
+        url = 'http://events.ucf.edu' + event.a['href']
+
+        event_objects.append(
+            Event(
+                title,
+                format_datetime(start_time),
+                format_datetime(end_time),
+                location,
+                description,
+                url
+            )
+         )
+
+    return event_objects
+
+
 if __name__ == "__main__":
 
     events_url = "http://events.ucf.edu/this-week/"
     html = get_page_html(events_url)
 
     events = get_events(html)
-    for event in events:
-        start_time = event.find('time', class_='dtstart')['datetime']
-        end_time = event.find('time', class_='dtend')['datetime']
+    event_objects = init_event_objects(events)
 
-        event_date_period = [format_datetime(start_time), format_datetime(end_time)]
-        print(event_date_period)
+    print(event_objects)

@@ -1,10 +1,11 @@
-from bs4 import BeautifulSoup
-from datetime import datetime
 import re
 import requests
 import dateutil.parser
 import json
+from datetime import datetime
+from bs4 import BeautifulSoup
 from Event import Event
+
 
 def fetch_page_html(url):
     print("Fetching page HTML from: " + url)
@@ -12,13 +13,14 @@ def fetch_page_html(url):
     html = BeautifulSoup(response.content, 'html.parser')
     return html
 
+
 def get_events(html):
     url = "http://events.ucf.edu/this-week/?page="
     event_lists = []
     events = []
 
     # Get how many pages there are, not including the "next arrow"
-    # via pagination at the bottom of the events page.
+    # via pagination at the bottom of the events page via regex.
     links = html.findAll("a", href=re.compile('page'))[:-1]
 
     # For each individual page of events per week ...
@@ -36,16 +38,23 @@ def get_events(html):
 
     return events
 
-def format_datetime(unformated_datetime):
-    day_names = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday",
-    "Saturday"]
 
-    month_names = ['January','February','March','April','May','June','July',
-    'August','September','October','November','December']
+def format_datetime(unformated_datetime):
+    day_names = [
+        "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday",
+        "Friday", "Saturday"
+    ]
+
+    month_names = [
+        'January', 'February', 'March', 'April', 'May', 'June', 'July',
+        'August', 'September', 'October', 'November', 'December'
+    ]
 
     # Clean up formatting.
-    formatted_datetime = unformated_datetime.replace('-', ' ').replace('T', ' ')
-    formatted_datetime = formatted_datetime.split(' ')[:-1]
+    formatted_datetime = unformated_datetime
+    .replace('-', ' ')
+    .replace('T', ' ')
+    .split(' ')[:-1]
 
     year = formatted_datetime[0]
     month = month_names[int(formatted_datetime[1]) - 1]
@@ -62,14 +71,13 @@ def format_datetime(unformated_datetime):
 
     return [weekday, month, day, year, time]
 
-def init_event_objects(events):
 
+def init_event_objects(events):
     print('Creating event objects ...')
 
     event_objects = []
 
     for event in events:
-
         # Retrieve properties that make up an event.
         title = event.h3.a.text
         start_time = event.find('time', class_='dtstart')['datetime']
@@ -101,7 +109,7 @@ if __name__ == "__main__":
     events = get_events(html)
     event_objects = init_event_objects(events)
 
-    # Dump event objects to JSON (convert to list of dicts first)
+    # Convert list of objs to dicts and dump to JSON.
     event_json = json.dumps([obj.__dict__ for obj in event_objects])
-    
+
     print(event_json)

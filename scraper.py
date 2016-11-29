@@ -3,6 +3,7 @@ from datetime import datetime
 import re
 import requests
 import dateutil.parser
+import json
 from Event import Event
 
 def fetch_page_html(url):
@@ -69,6 +70,7 @@ def init_event_objects(events):
 
     for event in events:
 
+        # Retrieve properties that make up an event.
         title = event.h3.a.text
         start_time = event.find('time', class_='dtstart')['datetime']
         end_time = event.find('time', class_='dtend')['datetime']
@@ -76,6 +78,7 @@ def init_event_objects(events):
         description = event.p.text
         url = 'http://events.ucf.edu' + event.a['href']
 
+        # Create an event object with the event properties.
         event_objects.append(
             Event(
                 title,
@@ -97,3 +100,8 @@ if __name__ == "__main__":
 
     events = get_events(html)
     event_objects = init_event_objects(events)
+
+    # Dump event objects to JSON (convert to list of dicts first)
+    event_json = json.dumps([obj.__dict__ for obj in event_objects])
+    
+    print(event_json)

@@ -51,10 +51,9 @@ def format_datetime(unformated_datetime):
     ]
 
     # Clean up formatting.
-    formatted_datetime = unformated_datetime
-    .replace('-', ' ')
-    .replace('T', ' ')
-    .split(' ')[:-1]
+    formatted_datetime = unformated_datetime.replace('-', ' ')
+    formatted_datetime = formatted_datetime.replace('T', ' ')
+    formatted_datetime = formatted_datetime.split(' ')[:-1]
 
     year = formatted_datetime[0]
     month = month_names[int(formatted_datetime[1]) - 1]

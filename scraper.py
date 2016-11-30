@@ -109,6 +109,10 @@ if __name__ == "__main__":
     event_objects = init_event_objects(events)
 
     # Convert list of objs to dicts and dump to JSON.
-    event_json = json.dumps([obj.__dict__ for obj in event_objects])
+    event_json = json.dumps(
+        [obj.__dict__ for obj in event_objects],
+        indent=4,
+        sort_keys=False,
+    )
 
     print(event_json)

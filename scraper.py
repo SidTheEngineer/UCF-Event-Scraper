@@ -100,8 +100,7 @@ def init_event_objects(events):
     return event_objects
 
 
-if __name__ == "__main__":
-
+def main():
     events_url = "http://events.ucf.edu/this-week/"
     html = fetch_page_html(events_url)
 
@@ -116,3 +115,7 @@ if __name__ == "__main__":
     )
 
     print(event_json)
+
+
+if __name__ == "__main__":
+    main()

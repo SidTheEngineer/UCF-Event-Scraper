@@ -3,13 +3,23 @@ import requests
 import dateutil.parser
 import json
 from datetime import datetime
+from pymongo import MongoClient
 from bs4 import BeautifulSoup
 from Event import Event
 
 
+# Config file where db info is contained.
+config = json.loads(open('config.json').read())
+
+# Mongo setup.
+client = MongoClient(config['mlabUrl'])
+db = client['campus-events']
+event_collection = db.events
+
+
 def fetch_page_html(url):
     print("Fetching page HTML from: " + url)
-    response = requests.get(url, timeout=8)
+    response = requests.get(url, timeout=20)
     html = BeautifulSoup(response.content, 'html.parser')
     return html
 
@@ -100,6 +110,16 @@ def init_event_objects(events):
     return event_objects
 
 
+def save_events(events):
+    print("Saving events to database ...")
+
+    # Convert to dicts before saving.
+    event_dicts = [obj.__dict__ for obj in events]
+
+    for event in event_dicts:
+        result = event_collection.insert_one(event)
+
+
 def main():
     events_url = "http://events.ucf.edu/this-week/"
     html = fetch_page_html(events_url)
@@ -107,14 +127,7 @@ def main():
     events = get_events(html)
     event_objects = init_event_objects(events)
 
-    # Convert list of objs to dicts and dump to JSON.
-    event_json = json.dumps(
-        [obj.__dict__ for obj in event_objects],
-        indent=4,
-        sort_keys=False,
-    )
-
-    print(event_json)
+    save_events(event_objects)
 
 
 if __name__ == "__main__":

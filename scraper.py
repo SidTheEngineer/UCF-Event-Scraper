@@ -14,7 +14,7 @@ config = json.loads(open('config.json').read())
 # Mongo setup.
 client = MongoClient(config['mlabUrl'])
 db = client['campus-events']
-event_collection = db.events
+event_collection = db.campus_events
 
 
 def fetch_page_html(url):
@@ -24,6 +24,7 @@ def fetch_page_html(url):
     return html
 
 
+# Lets hope UCF doesn't change this page ...
 def get_events(html):
     url = "http://events.ucf.edu/this-week/?page="
     event_lists = []
@@ -37,7 +38,7 @@ def get_events(html):
     for index in range(0, len(links)):
         page = fetch_page_html(url + str(index+1))
 
-        print('Fetching events from week page ' + str(index+1) + ' ...')
+        print('Fetching events from week page ' + str(index+1) + ' ...\n')
 
         event_week = page.find(id="calendar-events-week")
         event_lists += event_week.findAll("ul", class_="event-list")
@@ -82,7 +83,7 @@ def format_datetime(unformated_datetime):
 
 
 def init_event_objects(events):
-    print('Creating event objects ...')
+    print('Creating event objects ...\n')
 
     event_objects = []
 
@@ -95,12 +96,15 @@ def init_event_objects(events):
         description = event.p.text
         url = 'http://events.ucf.edu' + event.a['href']
 
+        start_time = format_datetime(start_time)
+        end_time = format_datetime(end_time)
+
         # Create an event object with the event properties.
         event_objects.append(
             Event(
                 title,
-                format_datetime(start_time),
-                format_datetime(end_time),
+                start_time,
+                end_time,
                 location,
                 description,
                 url
@@ -111,10 +115,13 @@ def init_event_objects(events):
 
 
 def save_events(events):
-    print("Saving events to database ...")
+    print("Saving events to database ...\n")
 
     # Convert to dicts before saving.
     event_dicts = [obj.__dict__ for obj in events]
+
+    # Remove the past week's events
+    event_collection.drop()
 
     for event in event_dicts:
         result = event_collection.insert_one(event)
